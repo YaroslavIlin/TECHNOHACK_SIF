@@ -15,26 +15,20 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QComboBox, QDialog,
-    QDialogButtonBox, QLabel, QLineEdit, QSizePolicy,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QWidget)
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
         Dialog.resize(541, 310)
-        self.buttonBox = QDialogButtonBox(Dialog)
-        self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setGeometry(QRect(180, 260, 341, 32))
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
         self.scheme = QLabel(Dialog)
         self.scheme.setObjectName(u"scheme")
         self.scheme.setGeometry(QRect(20, 22, 161, 20))
         self.cmb_scheme = QComboBox(Dialog)
         self.cmb_scheme.setObjectName(u"cmb_scheme")
-        self.cmb_scheme.setGeometry(QRect(213, 18, 321, 28))
+        self.cmb_scheme.setGeometry(QRect(215, 18, 321, 28))
         self.numwell = QLabel(Dialog)
         self.numwell.setObjectName(u"numwell")
         self.numwell.setGeometry(QRect(20, 74, 150, 20))
@@ -43,31 +37,35 @@ class Ui_Dialog(object):
         self.numport.setGeometry(QRect(20, 125, 150, 20))
         self.cmb_numwell = QComboBox(Dialog)
         self.cmb_numwell.setObjectName(u"cmb_numwell")
-        self.cmb_numwell.setGeometry(QRect(213, 70, 130, 28))
+        self.cmb_numwell.setGeometry(QRect(215, 70, 130, 28))
         self.cmb_numport = QComboBox(Dialog)
         self.cmb_numport.setObjectName(u"cmb_numport")
-        self.cmb_numport.setGeometry(QRect(214, 120, 130, 28))
+        self.cmb_numport.setGeometry(QRect(216, 120, 130, 28))
         self.lenS = QLabel(Dialog)
         self.lenS.setObjectName(u"lenS")
-        self.lenS.setGeometry(QRect(20, 180, 181, 20))
+        self.lenS.setGeometry(QRect(20, 180, 185, 20))
         self.le_lenleft = QLineEdit(Dialog)
         self.le_lenleft.setObjectName(u"le_lenleft")
-        self.le_lenleft.setGeometry(QRect(215, 178, 80, 28))
+        self.le_lenleft.setGeometry(QRect(217, 178, 80, 28))
         self.le_lenright = QLineEdit(Dialog)
         self.le_lenright.setObjectName(u"le_lenright")
-        self.le_lenright.setGeometry(QRect(308, 178, 80, 28))
+        self.le_lenright.setGeometry(QRect(310, 178, 80, 28))
         self.left = QLabel(Dialog)
         self.left.setObjectName(u"left")
-        self.left.setGeometry(QRect(215, 208, 80, 20))
+        self.left.setGeometry(QRect(217, 208, 80, 20))
         self.left.setAlignment(Qt.AlignCenter)
         self.right = QLabel(Dialog)
         self.right.setObjectName(u"right")
-        self.right.setGeometry(QRect(308, 207, 80, 20))
+        self.right.setGeometry(QRect(310, 207, 80, 20))
         self.right.setAlignment(Qt.AlignCenter)
+        self.btn_accept = QPushButton(Dialog)
+        self.btn_accept.setObjectName(u"btn_accept")
+        self.btn_accept.setGeometry(QRect(270, 260, 106, 35))
+        self.btn_decline = QPushButton(Dialog)
+        self.btn_decline.setObjectName(u"btn_decline")
+        self.btn_decline.setGeometry(QRect(400, 260, 106, 35))
 
         self.retranslateUi(Dialog)
-        self.buttonBox.accepted.connect(Dialog.accept)
-        self.buttonBox.rejected.connect(Dialog.reject)
 
         QMetaObject.connectSlotsByName(Dialog)
     # setupUi
@@ -80,5 +78,7 @@ class Ui_Dialog(object):
         self.lenS.setText(QCoreApplication.translate("Dialog", u"\u041f\u043e\u043b\u0443\u0434\u043b\u0438\u043d\u044b \u043f\u0440\u0434\u0437\u0430\u0434\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0443\u0442\u0438:", None))
         self.left.setText(QCoreApplication.translate("Dialog", u"\u041b\u0435\u0432\u0430\u044f", None))
         self.right.setText(QCoreApplication.translate("Dialog", u"\u041f\u0440\u0430\u0432\u0430\u044f", None))
+        self.btn_accept.setText(QCoreApplication.translate("Dialog", u"\u041e\u043a", None))
+        self.btn_decline.setText(QCoreApplication.translate("Dialog", u"\u041e\u0442\u043c\u0435\u043d\u0430", None))
     # retranslateUi
 

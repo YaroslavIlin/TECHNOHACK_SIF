@@ -20,6 +20,8 @@ class AddPort(QDialog):
         self.ui.cmb_scheme.setCurrentIndex(0)
  
         self.ui.cmb_scheme.activated.connect(self.changed_cmb_scheme)
+
+        self.ui.btn_decline.clicked.connect(self.click_decline)
         
         self.ui.btn_access.clicked.connect(lambda: self.add_ports_to_simdict(simdict))
         
@@ -75,10 +77,15 @@ class AddPort(QDialog):
             
         # @todo: delete this line later
         simdict.write_data()
-    
+        self.close()
 
+    def click_decline(self):
+        self.close()
+    
+'''
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = AddPort()
     window.show()
     sys.exit(app.exec())
+'''

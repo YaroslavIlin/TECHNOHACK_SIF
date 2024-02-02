@@ -281,6 +281,7 @@ class SimDict:
             ppoints, err_msg = _fix_ports_coordinates(well_coord, ppoints, well_id)
         
         self._welldata['wells'][f'well{well_id}']['nPorts'] += n_ports
+        # print(f"in dict {self._welldata['wells'][f'well{well_id}']['nPorts']}")
         # ports = dict()
         if not names:
             names_default = []
@@ -288,12 +289,12 @@ class SimDict:
                 names_default.append(f'скв. №{well_id}, порт №{ip}')
         else:
             names_default = names
-        for ip in range(n_ports):
-            port = dict()
-            # Set default name here
-            port['name'] = names_default[ip]
-            port['coordinates'] = ppoints[ip]
-            self._welldata['wells'][f'well{well_id}']['ports'][f'port{ip}'] = port
+        ip = self._welldata['wells'][f'well{well_id}']['nPorts'] - 1
+        port = dict()
+        # Set default name here
+        port['name'] = names_default[0]
+        port['coordinates'] = ppoints[0]
+        self._welldata['wells'][f'well{well_id}']['ports'][f'port{ip}'] = port
     
     
     def add_ports_to_well_segment_centers(self, well_id, n_ports, names=None):
@@ -372,6 +373,8 @@ class SimDict:
     
     def set_initial_fracture(self, well_id, port_id, initial_fracture_wings, kf, wf):
         # n_ports = self._welldata['wells'][f'well{well_id}']['nPorts']
+        # print(f"in dict initfrac {self._welldata['wells'][f'well{well_id}']['nPorts']}")
+        # print(port_id)
         pcoords = self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['coordinates']
         
         initfrac = dict()

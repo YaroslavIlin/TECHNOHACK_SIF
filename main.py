@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 from ui_MainWindow import Ui_MainWindow
 from AddWell import AddWell
 from AddPort import AddPort
+from AddFracture import AddFracture
 from utils import SimDict
 
 class Parameters():
@@ -86,6 +87,7 @@ class MainWindow(QMainWindow):
 
         self.ui.btn_addwell.clicked.connect(self.open_addwell)
         self.ui.btn_addport.clicked.connect(self.open_addport)
+        self.ui.btn_addfracture.clicked.connect(self.open_addfracture)
         
     def get_parameters(self):
         #Преобразует текст из line edit в переменные класса параметров
@@ -122,6 +124,9 @@ class MainWindow(QMainWindow):
         self.w.show()
     def open_addport(self):
         self.w = AddPort(self.simdict, self.simdict._nwells)
+        self.w.show()
+    def open_addfracture(self):
+        self.w = AddFracture(self.simdict, self.simdict._nwells)
         self.w.show()
 
 if __name__ == '__main__':

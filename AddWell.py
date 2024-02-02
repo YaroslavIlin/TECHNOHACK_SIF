@@ -29,6 +29,7 @@ class AddWell(QDialog):
         self.ui.cmb_typegeo.activated.connect(self.changed_cmb_typegeo)
         
         self.ui.btn_accept.clicked.connect(lambda: self.add_well_to_simdict(simdict))
+        self.ui.btn_decline.clicked.connect(self.click_decline)
         
     
     def changed_cmb_typegeo(self, index):
@@ -87,6 +88,10 @@ class AddWell(QDialog):
         
         # @todo: delete this line later
         simdict.write_data()
+        self.close()
+
+    def click_decline(self):
+        self.close()
         
         
 if __name__ == "__main__":
