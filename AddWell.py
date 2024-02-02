@@ -33,7 +33,7 @@ class AddWell(QDialog):
         
     
     def changed_cmb_typegeo(self, index):
-        if(self.ui.cmb_typegeo.currentIndex() == 1):
+        if self.ui.cmb_typegeo.currentIndex() == 1:
             self.ui.end.hide()
             self.ui.xend.hide()
             self.ui.yend.hide()

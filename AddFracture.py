@@ -16,7 +16,7 @@ class AddFracture(QDialog):
         self.ui.cmb_scheme.addItem('Одиночный')
         self.ui.cmb_scheme.addItem('Все порты одной скважины')
         self.ui.cmb_scheme.addItem('Все порты всех скважин')
-        if(num != 0):
+        if num != 0:
             for i in range(num):
                 self.ui.cmb_numwell.addItem(f'{i}')
             self.changed_cmb_numwell(simdict)
@@ -36,10 +36,10 @@ class AddFracture(QDialog):
 
  
     def changed_cmb_scheme(self):
-        if(self.ui.cmb_scheme.currentIndex() == 2):
+        if self.ui.cmb_scheme.currentIndex() == 1:
             self.ui.numport.hide()
             self.ui.cmb_numport.hide()
-        elif (self.ui.cmb_scheme.currentIndex() == 3):
+        elif self.ui.cmb_scheme.currentIndex() == 2:
             self.ui.numport.hide()
             self.ui.cmb_numport.hide()
             self.ui.numwell.hide()
