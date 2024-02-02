@@ -325,6 +325,8 @@ class SimDict:
             port['name'] = names_default[ip]
             port['coordinates'] = pp[ip]
             self._welldata['wells'][f'well{well_id}']['ports'][f'port{ip}'] = port
+            # print(port)
+            # print(self._welldata['wells'][f'well{well_id}']['ports'][f'port{ip}'])
             
     
     def add_ports_to_well_segment_borders(self, well_id, n_ports, names=None):
@@ -342,6 +344,8 @@ class SimDict:
         
         coo = self._welldata['wells'][f'well{well_id}']['coordinates']
         pp = _get_ports_coords_borders(coo, n_ports)
+        print(pp)
+        print(coo)
         
         self._welldata['wells'][f'well{well_id}']['nPorts'] = n_ports
         if not names:
@@ -365,6 +369,29 @@ class SimDict:
             for port_id in range(n_ports):
                 self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['C_perforation'] = 1.0e11
 
+    
+    def set_initial_fracture(self, well_id, port_id, initial_fracture_wings, kf, wf):
+        # n_ports = self._welldata['wells'][f'well{well_id}']['nPorts']
+        pcoords = self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['coordinates']
+        
+        initfrac = dict()
+        initfrac['norm'] = [0.0, 1.0]   # set normal vector for fracture
+        initfrac['kf'] = float(kf)
+        initfrac['wf'] = float(wf)
+        initfrac['coordinates'] = _fracture_from_wings(pcoords, initial_fracture_wings)
+        self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['initialFracture'] = initfrac
+    
+    
+    def set_initial_fractures_all_ports_on_well(self, well_id, initial_fracture_wings, kf, wf):
+        n_ports = self._welldata['wells'][f'well{well_id}']['nPorts']
+        for port_id in range(n_ports):
+            pcoords = self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['coordinates']
+            initfrac = dict()
+            initfrac['norm'] = [0.0, 1.0]   # set normal vector for fracture
+            initfrac['kf'] = float(kf)
+            initfrac['wf'] = float(wf)
+            initfrac['coordinates'] = _fracture_from_wings(pcoords, initial_fracture_wings)
+            self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['initialFracture'] = initfrac
     
     
     def write_data(self):
