@@ -115,7 +115,7 @@ class MainWindow(QMainWindow):
         )
         self.simdict.write_data()
     def open_addwell(self):
-        self.w = AddWell()
+        self.w = AddWell(self.simdict, self.simdict._nwells)
         self.w.show()
 
 if __name__ == '__main__':
