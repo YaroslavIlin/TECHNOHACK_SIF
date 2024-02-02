@@ -23,18 +23,17 @@ class AddFracture(QDialog):
         else:
             self.ui.cmb_numport.setEnabled(False)
             self.ui.cmb_numwell.setEnabled(False)
-
-        
-        
+    
         self.ui.cmb_scheme.setCurrentIndex(0)
 
         self.ui.cmb_scheme.activated.connect(self.changed_cmb_scheme)
 
         self.ui.cmb_numwell.activated.connect(lambda: self.changed_cmb_numwell(simdict))
 
-        #self.ui.btn_access.clicked.connect(self.add_fracture_to_simdict)
-
         self.ui.btn_decline.clicked.connect(self.click_decline)
+ 
+        self.ui.btn_accept.clicked.connect(lambda: self.add_fracture_to_simdict(simdict))
+
  
     def changed_cmb_scheme(self):
         if(self.ui.cmb_scheme.currentIndex() == 2):
@@ -51,12 +50,32 @@ class AddFracture(QDialog):
             self.ui.numwell.show()
             self.ui.numport.show()
 
+
     def add_fracture_to_simdict(self, simdict: SimDict):
-        if(self.ui.cmb_scheme.currentIndex() <= 1):
-            num_well = int(self.ui.cmb_numwell.currentText())
-            if(self.ui.cmb_scheme.currentIndex() == 0):
-                num_port = int(self.ui.cmb_numport.currentText())
-        lenS = [float(self.ui.le_lenleft.text()), float(self.ui.le_lenright.text())]
+        frac = [float(self.ui.le_lenleft.text()), float(self.ui.le_lenright.text())]
+        if self.ui.cmb_scheme.currentIndex() <= 1:  # 'Одиночный' или 'Все порты одной скважины'
+            w_id = int(self.ui.cmb_numwell.currentText())
+            if self.ui.cmb_scheme.currentIndex() == 0:  # 'Одиночный'
+                p_id = int(self.ui.cmb_numport.currentText())
+                simdict.set_potential_fracture(
+                    well_id                  = w_id,
+                    port_id                  = p_id,
+                    potential_fracture_wings = frac
+                )
+            else:
+                simdict.set_potential_fractures_all_ports_on_well(
+                    well_id                  = w_id,
+                    potential_fracture_wings = frac
+                )
+        else:
+            simdict.set_potential_fractures_all_ports_all_wells(
+                    potential_fracture_wings = frac
+                )
+        
+        # @todo: delete this line later
+        simdict.write_data()
+        self.close()
+
 
     def changed_cmb_numwell(self, simdict: SimDict):
             self.ui.cmb_numport.clear()
@@ -65,12 +84,9 @@ class AddFracture(QDialog):
             for i in range (n_ports):
                 self.ui.cmb_numport.addItem(f'{i}')
 
+
     def click_decline(self):
-        self.close()
-
-                
-
-        
+        self.close()   
         
 
 if __name__ == "__main__":

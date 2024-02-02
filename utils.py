@@ -266,6 +266,7 @@ class SimDict:
     def add_port_to_well(self, well_id, port_point, names=None, force_push=True):
         well_coord = self._welldata['wells'][f'well{well_id}']['coordinates']
         n_ports = 1
+        ip = self._welldata['wells'][f'well{well_id}']['nPorts'] - 1
         
         names = [] if names == None else names
         names = [names] if not isinstance(names, list) else names
@@ -273,8 +274,7 @@ class SimDict:
         ppoints = [[float(port_point[0]), float(port_point[1])]]
             
         self._fracs_on_wells[f'well{well_id}']['nfracs'] += n_ports
-        for ip in range(n_ports):
-            self._fracs_on_wells[f'well{well_id}']['is_fractured'][f'port{ip}'] = False
+        self._fracs_on_wells[f'well{well_id}']['is_fractured'][f'port{ip}'] = False
         
         if force_push:
             # todo: add warning if port positions were corrected
@@ -285,11 +285,9 @@ class SimDict:
         # ports = dict()
         if not names:
             names_default = []
-            for ip in range(n_ports):
-                names_default.append(f'скв. №{well_id}, порт №{ip}')
+            names_default.append(f'скв. №{well_id}, порт №{ip}')
         else:
             names_default = names
-        ip = self._welldata['wells'][f'well{well_id}']['nPorts'] - 1
         port = dict()
         # Set default name here
         port['name'] = names_default[0]
@@ -345,8 +343,6 @@ class SimDict:
         
         coo = self._welldata['wells'][f'well{well_id}']['coordinates']
         pp = _get_ports_coords_borders(coo, n_ports)
-        print(pp)
-        print(coo)
         
         self._welldata['wells'][f'well{well_id}']['nPorts'] = n_ports
         if not names:
@@ -397,12 +393,47 @@ class SimDict:
             self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['initialFracture'] = initfrac
     
     
+    def set_potential_fracture(self, well_id, port_id, potential_fracture_wings):
+        pcoords = self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['coordinates']
+        self._fracs_on_wells[f'well{well_id}']['is_fractured'][f'port{port_id}'] = True
+        potentfrac = dict()
+        potentfrac['norm'] = [0.0, 1.0]   # set normal vector for fracture
+        potentfrac['coordinates'] = _fracture_from_wings(pcoords, potential_fracture_wings)
+        self._sim_dict['meshProperties']['fractureGeometry']['fractures'][f'fracture{self._nfracs}'] = potentfrac
+        self._nfracs += 1
+    
+    
+    def set_potential_fractures_all_ports_on_well(self, well_id, potential_fracture_wings):
+        n_ports = self._welldata['wells'][f'well{well_id}']['nPorts']
+        for port_id in range(n_ports):
+            pcoords = self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['coordinates']
+            self._fracs_on_wells[f'well{well_id}']['is_fractured'][f'port{port_id}'] = True
+            potentfrac = dict()
+            potentfrac['norm'] = [0.0, 1.0]   # set normal vector for fracture
+            potentfrac['coordinates'] = _fracture_from_wings(pcoords, potential_fracture_wings)
+            self._sim_dict['meshProperties']['fractureGeometry']['fractures'][f'fracture{self._nfracs}'] = potentfrac
+            self._nfracs += 1
+    
+    
+    def set_potential_fractures_all_ports_all_wells(self, potential_fracture_wings):
+        for well_id in range(self._nwells):
+            n_ports = self._welldata['wells'][f'well{well_id}']['nPorts']
+            for port_id in range(n_ports):
+                pcoords = self._welldata['wells'][f'well{well_id}']['ports'][f'port{port_id}']['coordinates']
+                self._fracs_on_wells[f'well{well_id}']['is_fractured'][f'port{port_id}'] = True
+                potentfrac = dict()
+                potentfrac['norm'] = [0.0, 1.0]   # set normal vector for fracture
+                potentfrac['coordinates'] = _fracture_from_wings(pcoords, potential_fracture_wings)
+                self._sim_dict['meshProperties']['fractureGeometry']['fractures'][f'fracture{self._nfracs}'] = potentfrac
+                self._nfracs += 1
+
+    
     def write_data(self):
         if self._sim_dict['simID'] == 0:
             self.set_simID(0)
             
         self._welldata['nWells'] = self._nwells
-        # self._sim_dict['meshProperties']['fractureGeometry']['nFractures'] = self._nfracs
+        self._sim_dict['meshProperties']['fractureGeometry']['nFractures'] = self._nfracs
         self._sim_dict['wellData'] = self._welldata
         
         sim_dir = self._sim_dict['simDir']
