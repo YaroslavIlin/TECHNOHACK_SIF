@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 #from ui_formation_and_fluid import Ui_MainWindow
 from ui_MainWindow import Ui_MainWindow
 from AddWell import AddWell
+from AddPort import AddPort
 from utils import SimDict
 
 class Parameters():
@@ -82,7 +83,9 @@ class MainWindow(QMainWindow):
         self.ui.le_p0.textChanged.connect(self.get_parameters)
 
         #Привязка кнопок на открытие дополнительных окон
+
         self.ui.btn_addwell.clicked.connect(self.open_addwell)
+        self.ui.btn_addport.clicked.connect(self.open_addport)
         
     def get_parameters(self):
         #Преобразует текст из line edit в переменные класса параметров
@@ -116,6 +119,9 @@ class MainWindow(QMainWindow):
         self.simdict.write_data()
     def open_addwell(self):
         self.w = AddWell(self.simdict, self.simdict._nwells)
+        self.w.show()
+    def open_addport(self):
+        self.w = AddPort(self.simdict, self.simdict._nwells)
         self.w.show()
 
 if __name__ == '__main__':

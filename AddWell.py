@@ -61,10 +61,14 @@ class AddWell(QDialog):
             float(self.ui.le_xbegin.text()),
             float(self.ui.le_ybegin.text()),
         ]
-        end = [
-            float(self.ui.le_xend.text()),
-            float(self.ui.le_yend.text()),
-        ]
+        try:
+            end = [
+                float(self.ui.le_xend.text()),
+                float(self.ui.le_yend.text()),
+            ]
+        except:
+            end = None
+        
         name = self.ui.le_namewell.text()
         if name == '':
             name = None
