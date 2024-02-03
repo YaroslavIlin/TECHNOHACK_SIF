@@ -75,6 +75,10 @@ class MainWindow(QMainWindow):
         self.ui.le_sMin.setText('25')
         self.ui.le_sMax.setText('45')
         self.ui.le_p0.setText('20')
+
+        self.ui.le_simulnub.setText('0')
+
+        
         
         #При изменениии числа в line edit автоматически заполняет все параметры
         self.ui.le_E.textChanged.connect(self.get_parameters)
@@ -88,6 +92,9 @@ class MainWindow(QMainWindow):
         self.ui.le_sMin.textChanged.connect(self.get_parameters)
         self.ui.le_sMax.textChanged.connect(self.get_parameters)
         self.ui.le_p0.textChanged.connect(self.get_parameters)
+
+        self.ui.le_comment.textChanged.connect(lambda: self.get_comment_sim(self.simdict))
+        self.ui.le_simulnub.textChanged.connect(lambda: self.get_num_sim(self.simdict))
 
         #Привязка кнопок на открытие дополнительных окон
 
@@ -113,7 +120,14 @@ class MainWindow(QMainWindow):
         self.ui.cb_SIF.activated.connect(self.activated_cmb_sif)
         
         #self.ui.btn_addfracture.clicked.connect(lambda: self.testplot(self.canvas, 'testplot'))
-                    
+#Вкладка сетка
+        self.ui.le_dt.setText('0.4')
+        self.ui.le_t_start.setText('0')
+        self.ui.le_t_end.setText('10')
+        self.ui.le_dt.textChanged.connect(lambda: self.get_timestep_prop(self.simdict))
+        self.ui.le_t_start.textChanged.connect(lambda: self.get_timestep_prop(self.simdict))
+        self.ui.le_t_end.textChanged.connect(lambda: self.get_timestep_prop(self.simdict))
+        
         
     def get_parameters(self):
         #Преобразует текст из line edit в переменные класса параметров
@@ -246,16 +260,22 @@ class MainWindow(QMainWindow):
         self.ui.lbl_yendwell.setText(f"Y: = {round(yend, 1)} м")
         self.ui.lbl_nports.setText(f"N: = {self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['nPorts']}")
         #if self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['geometryType']
-'''
-    def testplot(self, cnv: MplCanvas, s: str):
-        x = np.random.rand(10)
-        y = np.random.rand(10)
-        cnv.axes.cla()
-        cnv.axes.plot(x, y, label=s)
-        cnv.axes.legend()
-        cnv.draw()
-        
-        '''
+    def get_timestep_prop(self, simdict: SimDict):
+        dt = float(self.ui.le_dt.text())
+        t_start = float(self.ui.le_t_start.text())
+        t_end = float(self.ui.le_t_end.text())
+        simdict.set_timestep_properties(dt, t_start, t_end)
+        self.simdict.write_data()
+
+    def get_num_sim(self, simdict: SimDict):
+        simnum = int(self.ui.le_simulnub.text())
+        self.simdict.set_simID(simnum)
+        self.simdict.write_data()
+    
+    def get_comment_sim(self, simdict: SimDict):
+        simcomment = self.ui.le_comment.text()
+        self.simdict.set_simComment(simcomment)
+        self.simdict.write_data()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
