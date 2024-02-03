@@ -1,4 +1,3 @@
-
 import sys
 from typing import Optional
 from PySide6.QtCore import QFile, QSize, Qt
@@ -21,6 +20,8 @@ from AddWell import AddWell
 from AddPort import AddPort
 from AddFracture import AddFracture
 from utils import SimDict
+from proxy_window import ProxyWindow
+
 
 from scripts.canvas import MplCanvas         
 
@@ -102,6 +103,7 @@ class MainWindow(QMainWindow):
         self.ui.btn_addwell.clicked.connect(self.open_addwell)
         self.ui.btn_addport.clicked.connect(self.open_addport)
         self.ui.btn_addfracture.clicked.connect(self.open_addfracture)
+        self.ui.btn_downoladtimer.clicked.connect(self.proxy_window)
 
 
 #Вкладка конфигурации
@@ -145,6 +147,33 @@ class MainWindow(QMainWindow):
         #self.ui.graph_result_1.addWidget(self.canvas)
         #self.ui.btn_graph_calc.clicked.connect(lambda: self.testplot(self.canvas, 'test'))
 
+        # Вкладка "Сетка"
+        self.ui.le_cell_size.setText('200')
+        self.ui.le_SIHF.setText('2')
+        self.ui.le_fracture.setText('5')
+        self.ui.le_SIHF_min.setText('20')
+        self.ui.le_SIHF_max.setText('200')
+        self.ui.le_well_min.setText('20')
+        self.ui.le_well_max.setText('200')
+        
+        self.ui.le_cell_size.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_SIHF.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_fracture.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_SIHF_min.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_SIHF_max.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_well_min.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_well_max.textChanged.connect(self.get_mesh_properties)   
+        
+        # Заполнить hardcode поля
+        if True:
+            self.simdict.set_algorithm_settings()
+            self.simdict.set_elasticity_problem_settings()
+            self.simdict.set_wellbore_modeling_properties()
+            self.get_parameters()
+            self.get_mesh_properties()
+            self.update_domain_borders()
+            
+                    
     def get_parameters(self):
         #Преобразует текст из line edit в переменные класса параметров
         #Также автоматически преобразует в СИ
@@ -175,6 +204,26 @@ class MainWindow(QMainWindow):
             self.param.data_p0
         )
         self.simdict.write_data()
+        
+        
+    def get_mesh_properties(self):
+        h_def = float(self.ui.le_cell_size.text())
+        h_f   = float(self.ui.le_SIHF.text())
+        h_p   = float(self.ui.le_fracture.text())
+        dist_min_frac = float(self.ui.le_SIHF_min.text())
+        dist_max_frac = float(self.ui.le_SIHF_max.text())
+        dist_min_prod = float(self.ui.le_well_min.text())
+        dist_max_prod = float(self.ui.le_well_max.text())
+        self.simdict.set_mesh_properties(
+            h_frac        = h_f,
+            h_default     = h_def,
+            h_prod        = h_p,
+            dist_min_frac = dist_min_frac,
+            dist_max_frac = dist_max_frac,
+            dist_min_prod = dist_min_prod,
+            dist_max_prod = dist_max_prod
+        )
+        self.simdict.write_data()
     
 
     def update_domain_borders(self):
@@ -196,17 +245,25 @@ class MainWindow(QMainWindow):
         self.restart_cmb_config()
         self.update_domain_borders()
         
+        
     def open_addport(self):
         self.w = AddPort(self.simdict, self.simdict._nwells)
         self.w.exec()
         self.restart_cmb_config()
         self.update_domain_borders()
 
+
     def open_addfracture(self):
         self.w = AddFracture(self.simdict, self.simdict._nwells)
         self.w.exec()
         self.restart_cmb_config()
         self.update_domain_borders()
+        
+        
+    def proxy_window(self):
+        self.proxy = ProxyWindow(self.simdict, self.simdict._nwells)
+        self.proxy.show()
+
 
     def restart_cmb_config(self):
         self.ui.cb_well.clear()
@@ -346,4 +403,3 @@ if __name__ == '__main__':
     window.show()
 
     app.exec()
-    
