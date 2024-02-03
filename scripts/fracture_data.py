@@ -62,8 +62,8 @@ class FractureData:
                 self.indxs_frac.append(indxs)
             self.IS_FIRST = False
         
-        wmin, wmax = 0.0, 0.0
-        pmin, pmax = 0.0, 0.0
+        wmin, wmax = 10.0, -1.0
+        pmin, pmax = 100.0e6, -1.0
         for i in range(self.nf):
             frac = {}
             indxs = self.indxs_frac[i]
