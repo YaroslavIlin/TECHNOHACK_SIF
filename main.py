@@ -13,12 +13,24 @@ from PySide6.QtWidgets import (
     QWidget,
     QTabWidget
 )
+import matplotlib
+import numpy as np
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 #from ui_formation_and_fluid import Ui_MainWindow
 from ui_MainWindow import Ui_MainWindow
 from AddWell import AddWell
 from AddPort import AddPort
 from AddFracture import AddFracture
 from utils import SimDict
+
+class MplCanvas(FigureCanvasQTAgg):
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
+         
 
 class Parameters():
     data_E      = 0.0
@@ -88,6 +100,20 @@ class MainWindow(QMainWindow):
         self.ui.btn_addwell.clicked.connect(self.open_addwell)
         self.ui.btn_addport.clicked.connect(self.open_addport)
         self.ui.btn_addfracture.clicked.connect(self.open_addfracture)
+
+
+#Вкладка конфигурации
+        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+        self.ui.graph_config.addWidget(self.canvas)
+        self.ui.le_X_min.setText('-200')
+        self.ui.le_X_max.setText('200')
+        self.ui.le_Y_min.setText('-200')
+        self.ui.le_Y_max.setText('200')
+        self.restart_cmb_config() 
+        self.ui.cb_well.activated.connect(self.activated_cmb_well)  
+        
+        #self.ui.btn_addfracture.clicked.connect(lambda: self.testplot(self.canvas, 'testplot'))  
+                    
         
     def get_parameters(self):
         #Преобразует текст из line edit в переменные класса параметров
@@ -121,13 +147,57 @@ class MainWindow(QMainWindow):
         self.simdict.write_data()
     def open_addwell(self):
         self.w = AddWell(self.simdict, self.simdict._nwells)
-        self.w.show()
+        self.w.exec()
+        self.restart_cmb_config()
+        
     def open_addport(self):
         self.w = AddPort(self.simdict, self.simdict._nwells)
-        self.w.show()
+        self.w.exec()
+        self.restart_cmb_config()
+
     def open_addfracture(self):
         self.w = AddFracture(self.simdict, self.simdict._nwells)
-        self.w.show()
+        self.w.exec()
+        self.restart_cmb_config()
+
+    def restart_cmb_config(self):
+        self.ui.cb_well.clear()
+        self.ui.cb_port.clear()
+        self.ui.cb_SIF.clear()
+        if self.simdict._nwells == 0:
+            self.ui.cb_well.setEnabled(False)
+            self.ui.cb_port.setEnabled(False)
+            self.ui.cb_SIF.setEnabled(False)
+        else:
+            self.ui.cb_well.setEnabled(True)
+            for i in range(self.simdict._nwells):
+                self.ui.cb_well.addItem(f"{i} ({self.simdict._welldata['wells'][f'well{i}']['name']})")
+                if self.simdict._welldata['wells'][f'well{i}']['nPorts'] == 0:
+                    self.ui.cb_port.setEnabled(False)
+                else:
+                    self.ui.cb_port.setEnabled(True)
+            self.activated_cmb_well()
+
+    #def activated_cmb_port(self):
+
+    def activated_cmb_well(self):
+        self.ui.cb_port.clear()
+        for i in range(self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['nPorts']):
+            self.ui.cb_port.addItem(f"{i}")
+        if self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['geometryType'] == "horizontal":
+            self.ui.lbl_typegeo.setText("Горизонтальная")
+        elif self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['geometryType'] == "vertical":
+            self.ui.lbl_typegeo.setText("Вертикальная")
+        #if self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['geometryType']
+
+    def testplot(self, cnv: MplCanvas, s: str):
+        x = np.random.rand(10)
+        y = np.random.rand(10)
+        cnv.axes.cla()
+        cnv.axes.plot(x, y, label=s)
+        cnv.axes.legend()
+        cnv.draw()
+        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
