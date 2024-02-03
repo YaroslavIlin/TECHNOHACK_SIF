@@ -13,12 +13,16 @@ from PySide6.QtWidgets import (
     QWidget,
     QTabWidget
 )
+import numpy as np
+from matplotlib.axes import Axes
 #from ui_formation_and_fluid import Ui_MainWindow
 from ui_MainWindow import Ui_MainWindow
 from AddWell import AddWell
 from AddPort import AddPort
 from AddFracture import AddFracture
 from utils import SimDict
+
+from scripts.canvas import MplCanvas         
 
 class Parameters():
     data_E      = 0.0
@@ -57,6 +61,8 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
+        #self.ui.tabWidget.currentChanged.connect(self.get_parameters)
+
         # default params
         self.ui.le_E.setText('20')
         self.ui.le_nu.setText('0.22')
@@ -88,6 +94,26 @@ class MainWindow(QMainWindow):
         self.ui.btn_addwell.clicked.connect(self.open_addwell)
         self.ui.btn_addport.clicked.connect(self.open_addport)
         self.ui.btn_addfracture.clicked.connect(self.open_addfracture)
+
+
+#Вкладка конфигурации
+        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+        self.ui.graph_config.addWidget(self.canvas)
+        self.ui.le_X_min.setText('-200')
+        self.ui.le_X_max.setText('200')
+        self.ui.le_Y_min.setText('-200')
+        self.ui.le_Y_max.setText('200')
+        self.restart_cmb_config()
+        self.ui.le_X_min.textChanged.connect(self.update_domain_borders)
+        self.ui.le_X_max.textChanged.connect(self.update_domain_borders)
+        self.ui.le_Y_min.textChanged.connect(self.update_domain_borders)
+        self.ui.le_Y_max.textChanged.connect(self.update_domain_borders)
+        self.ui.cb_well.activated.connect(self.activated_cmb_well)
+        self.ui.cb_port.activated.connect(self.activated_cmb_port)  
+        self.ui.cb_SIF.activated.connect(self.activated_cmb_sif)
+        
+        #self.ui.btn_addfracture.clicked.connect(lambda: self.testplot(self.canvas, 'testplot'))
+                    
         
         # Вкладка "Сетка"
         self.ui.le_cell_size.setText('200')
@@ -167,15 +193,117 @@ class MainWindow(QMainWindow):
         self.simdict.write_data()
     
     
+    
+
+    def update_domain_borders(self):
+        xmin = float(self.ui.le_X_min.text())
+        xmax = float(self.ui.le_X_max.text())
+        ymin = float(self.ui.le_Y_min.text())
+        ymax = float(self.ui.le_Y_max.text())
+        self.simdict.set_domain_boundaries(xmin, xmax, ymin, ymax)
+        # @todo: delete later
+        self.simdict.write_data()
+        
+        self.simdict._plot(self.canvas)
+        self.canvas.draw()
+
+    
     def open_addwell(self):
         self.w = AddWell(self.simdict, self.simdict._nwells)
-        self.w.show()
+        self.w.exec()
+        self.restart_cmb_config()
+        self.update_domain_borders()
+        
     def open_addport(self):
         self.w = AddPort(self.simdict, self.simdict._nwells)
-        self.w.show()
+        self.w.exec()
+        self.restart_cmb_config()
+        self.update_domain_borders()
+
     def open_addfracture(self):
         self.w = AddFracture(self.simdict, self.simdict._nwells)
-        self.w.show()
+        self.w.exec()
+        self.restart_cmb_config()
+        self.update_domain_borders()
+
+    def restart_cmb_config(self):
+        self.ui.cb_well.clear()
+        self.ui.cb_port.clear()
+        self.ui.cb_SIF.clear()
+        if self.simdict._nwells == 0:
+            self.ui.cb_well.setEnabled(False)
+            self.ui.cb_port.setEnabled(False)
+            self.ui.cb_SIF.setEnabled(False)
+        else:
+            self.ui.cb_well.setEnabled(True)
+            for i in range(self.simdict._nwells):
+                self.ui.cb_well.addItem(f"{i} ({self.simdict._welldata['wells'][f'well{i}']['name']})")
+                if self.simdict._welldata['wells'][f'well{i}']['nPorts'] != 0:
+                    self.ui.cb_port.setEnabled(True)
+            self.activated_cmb_well()
+        if self.simdict._nfracs != 0:
+            self.ui.cb_SIF.setEnabled(True)
+            
+
+    def activated_cmb_sif(self):
+        xleft, yleft, xright, yright = self.simdict._sim_dict['meshProperties']['fractureGeometry']['fractures'][f'fracture{self.ui.cb_SIF.currentIndex()}']['coordinates']
+        self.ui.lbl_xleftfracture.setText(f'X: = {round(xleft, 1)} м')
+        self.ui.lbl_yleftfracture.setText(f'Y: = {round(yleft, 1)} м')
+        self.ui.lbl_xrightfracture.setText(f'X: = {round(xright,1)} м')
+        self.ui.lbl_yrightfracture.setText(f'Y: = {round(yright,1)} м')
+
+    def activated_cmb_port(self):
+        #self.ui.cb_SIF.clear()
+        flag = False
+        for i in range (self.simdict._sim_dict['meshProperties']['fractureGeometry']['nFractures']):
+            self.ui.cb_SIF.addItem(f'{i}')
+            flag = True
+        if flag:
+            self.activated_cmb_sif()
+        x, y = self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['ports'][f'port{self.ui.cb_port.currentIndex()}']['coordinates']
+        xleftwing, yleftwing, xrightwing, yrightwing = self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['ports'][f'port{self.ui.cb_port.currentIndex()}']['initialFracture']['coordinates']
+        kf = self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['ports'][f'port{self.ui.cb_port.currentIndex()}']['initialFracture']['kf']
+        wf = self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['ports'][f'port{self.ui.cb_port.currentIndex()}']['initialFracture']['wf']
+        self.ui.lbl_xcoordport.setText(f'X: = {round(x, 1)} м')
+        self.ui.lbl_ycoordport.setText(f'Y: = {round(y, 1)} м')
+        leftwing = abs(x - xleftwing)
+        rightwing = abs(x - xrightwing)
+        self.ui.lbl_leftwingport.setText(f'Левое крыло: {round(leftwing, 3)} м')
+        self.ui.lbl_rightwingport.setText(f'Правое крыло: {round(rightwing, 3)} м')
+        kf = kf / 9.869233e-13
+        wf = wf / 1.0e-3
+        self.ui.lbl_kfport.setText(f'kf:= {round(kf, 3)} Д')
+        self.ui.lbl_wport.setText(f'w:= {round(wf, 3)} мм')
+
+    def activated_cmb_well(self):
+        self.ui.cb_port.clear()
+        flag = False
+        for i in range(self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['nPorts']):
+            self.ui.cb_port.addItem(f"{i}")
+            flag = True
+        if flag:
+            self.activated_cmb_port()
+        if self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['geometryType'] == "horizontal":
+            self.ui.lbl_typegeo.setText("Горизонтальная")
+        elif self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['geometryType'] == "vertical":
+            self.ui.lbl_typegeo.setText("Вертикальная")
+        xbeg, ybeg, xend, yend = self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['coordinates']
+        self.ui.lbl_xbeginwell.setText(f"X: = {round(xbeg, 1)} м")
+        self.ui.lbl_ybeginwell.setText(f"Y: = {round(ybeg, 1)} м")
+        self.ui.lbl_xendwell.setText(f"X: = {round(xend, 1)} м")
+        self.ui.lbl_yendwell.setText(f"Y: = {round(yend, 1)} м")
+        self.ui.lbl_nports.setText(f"N: = {self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['nPorts']}")
+        #if self.simdict._welldata['wells'][f'well{self.ui.cb_well.currentIndex()}']['geometryType']
+'''
+    def testplot(self, cnv: MplCanvas, s: str):
+        x = np.random.rand(10)
+        y = np.random.rand(10)
+        cnv.axes.cla()
+        cnv.axes.plot(x, y, label=s)
+        cnv.axes.legend()
+        cnv.draw()
+        
+        '''
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

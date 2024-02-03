@@ -37,6 +37,8 @@ class AddFracture(QDialog):
  
     def changed_cmb_scheme(self):
         if self.ui.cmb_scheme.currentIndex() == 1:
+            self.ui.cmb_numwell.show()
+            self.ui.numwell.show()
             self.ui.numport.hide()
             self.ui.cmb_numport.hide()
         elif self.ui.cmb_scheme.currentIndex() == 2:
