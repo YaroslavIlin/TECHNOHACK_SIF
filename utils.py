@@ -2,9 +2,12 @@ import sys
 import os
 import json
 import numpy as np
+import itertools
 
 from math import sqrt
-from itertools import chain
+from scripts.mesh_generation import generate_mesh
+from scripts.plot_domain import plot_wells_fractures_domain
+
 
 _repository_dir = os.path.abspath(os.getcwd())
 sys.path.append(_repository_dir)
@@ -216,7 +219,7 @@ class SimDict:
         # todo: message that end_point is not needed for vertical well
         end_point = start_point if geometry_type == 'vertical' else end_point
         
-        coordinates = [float(coo) for coo in list(chain.from_iterable([start_point, end_point]))]
+        coordinates = [float(coo) for coo in list(itertools.chain.from_iterable([start_point, end_point]))]
         
         # if well_type != 'production':
         self._fracs_on_wells[f'well{self._nwells}'] = dict()
@@ -428,6 +431,45 @@ class SimDict:
                 self._nfracs += 1
 
     
+    def _plot(self, show_well_labels=True, show_port_labels=False):
+        well_labels, well_coords, is_hf = [], [], []
+        well_port_labels, well_port_coords, init_frac_coords = [], [], []
+        for iw in range(self._nwells):
+            wkey = f'well{iw}'
+            well = self._welldata['wells'][wkey]
+            well_labels.append(well['name'])
+            well_coords.append(well['coordinates'])
+            if well['wellType'] == 'production':
+                is_hf.append(1)
+            else:
+                is_hf.append(0)
+            
+            port_labels, port_coords, ifrac_coords = [], [], []
+            for ip in range(well['nPorts']):
+                pkey = f'port{ip}'
+                port = self._welldata['wells'][wkey]['ports'][pkey]
+                port_labels.append(port['name'])
+                port_coords.append(port['coordinates'])
+                ifrac_coords.append(port['initialFracture']['coordinates'])
+            well_port_labels.append(port_labels)
+            well_port_coords.append(port_coords)
+            init_frac_coords.append(ifrac_coords)
+        
+        frac_coords = []
+        xmin = self._sim_dict['meshProperties']['xmin']
+        xmax = self._sim_dict['meshProperties']['xmax']
+        ymin = self._sim_dict['meshProperties']['ymin']
+        ymax = self._sim_dict['meshProperties']['ymax']
+        domain_coords = [xmin, ymin, xmax, ymax]
+        for ifrac in range(self._sim_dict['meshProperties']['fractureGeometry']['nFractures']):
+            frac_coords.append(self._sim_dict['meshProperties']['fractureGeometry']['fractures'][f'fracture{ifrac}']['coordinates'])
+        
+        plot_wells_fractures_domain(well_labels, well_coords, is_hf,
+            well_port_coords, well_port_labels, init_frac_coords,
+            frac_coords, domain_coords,
+            show_well_labels, show_port_labels)
+    
+    
     def write_data(self):
         if self._sim_dict['simID'] == 0:
             self.set_simID(0)
@@ -453,4 +495,3 @@ class SimDict:
         #     json.dump(runnerDict, f, indent=4)
         
         # generate_mesh(input_file, plot_mesh)
-    
