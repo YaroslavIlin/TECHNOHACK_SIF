@@ -62,6 +62,7 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         
         #self.ui.tabWidget.currentChanged.connect(self.get_parameters)
+        self.ui.tabWidget.currentChanged.connect(self.restart_cmb_result)
 
         # default params
         self.ui.le_E.setText('20')
@@ -104,8 +105,8 @@ class MainWindow(QMainWindow):
 
 
 #Вкладка конфигурации
-        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
-        self.ui.graph_config.addWidget(self.canvas)
+        self.canvas_config = MplCanvas(self, width=5, height=4, dpi=100)
+        self.ui.graph_config.addWidget(self.canvas_config)
         self.ui.le_X_min.setText('-200')
         self.ui.le_X_max.setText('200')
         self.ui.le_Y_min.setText('-200')
@@ -128,7 +129,22 @@ class MainWindow(QMainWindow):
         self.ui.le_t_start.textChanged.connect(lambda: self.get_timestep_prop(self.simdict))
         self.ui.le_t_end.textChanged.connect(lambda: self.get_timestep_prop(self.simdict))
         
-        
+#Вкладка расчёта
+        self.ui.cmb_graphtype.addItem('p^p(t)')
+        self.ui.cmb_graphtype.addItem('p^w(t)')
+        self.ui.cmb_graphtype.addItem('Qf(t)')
+        self.ui.cmb_graphtype.addItem('Qinc(t)')
+        self.ui.cmb_graphtype.addItem('w(x)')
+        self.ui.cmb_graphtype.addItem('p(x)')
+
+        self.restart_cmb_result()
+
+        self.ui.cmb_graphtype.activated.connect(self.changed_cmb_graphtype)
+        self.ui.cmb_graphtype.activated.connect(self.restart_cmb_result)
+        self.ui.cmb_numwell.activated.connect(self.restart_cmb_port_result)
+        #self.ui.graph_result_1.addWidget(self.canvas)
+        #self.ui.btn_graph_calc.clicked.connect(lambda: self.testplot(self.canvas, 'test'))
+
     def get_parameters(self):
         #Преобразует текст из line edit в переменные класса параметров
         #Также автоматически преобразует в СИ
@@ -170,8 +186,8 @@ class MainWindow(QMainWindow):
         # @todo: delete later
         self.simdict.write_data()
         
-        self.simdict._plot(self.canvas)
-        self.canvas.draw()
+        self.simdict._plot(self.canvas_config)
+        self.canvas_config.draw()
 
     
     def open_addwell(self):
@@ -276,6 +292,53 @@ class MainWindow(QMainWindow):
         simcomment = self.ui.le_comment.text()
         self.simdict.set_simComment(simcomment)
         self.simdict.write_data()
+
+    def changed_cmb_graphtype(self):
+        if self.ui.cmb_graphtype.currentIndex() <= 3:
+            self.ui.lbl_numwellorfrac.setText('№ скв.')
+            self.ui.lbl_numportresult.show()
+            self.ui.cmb_numport.show()
+        else:
+            self.ui.lbl_numwellorfrac.setText('№ трещ.')
+            self.ui.lbl_numportresult.hide()
+            self.ui.cmb_numport.hide()
+
+    def restart_cmb_result(self):
+        self.ui.cmb_numwell.clear()
+        self.ui.cmb_numport.clear()
+        if self.ui.cmb_numport.isVisible():
+            if self.simdict._nwells == 0:
+                self.ui.cmb_numwell.setEnabled(False)
+                self.ui.cmb_numport.setEnabled(False)
+            else:
+                self.ui.cmb_numwell.setEnabled(True)
+                for i in range(self.simdict._nwells):
+                    self.ui.cmb_numwell.addItem(f"{i}")
+                self.restart_cmb_port_result()
+                    
+        else:
+            if self.simdict._nfracs == 0:
+                self.ui.cmb_numwell.setEnabled(False)
+            else:
+                self.ui.cmb_numwell.setEnabled(True)
+                for i in range(self.simdict._nfracs):
+                    self.ui.cmb_numwell.addItem(f"{i}")
+
+    def restart_cmb_port_result (self):
+        self.ui.cmb_numport.clear()
+        if self.ui.cmb_numport.isVisible():
+            for i in range(self.simdict._welldata['wells'][f'well{self.ui.cmb_numwell.currentIndex()}']['nPorts']):
+                self.ui.cmb_numport.addItem(f"{i}")
+                self.ui.cmb_numport.setEnabled(True)
+    
+    
+    def testplot(self, cnv: MplCanvas, s: str):
+        x = np.random.rand(10)
+        y = np.random.rand(10)
+        cnv.axes.cla()
+        cnv.axes.plot(x, y, label=s)
+        cnv.axes.legend()
+        cnv.draw()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
