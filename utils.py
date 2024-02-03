@@ -478,6 +478,11 @@ class SimDict:
         self._sim_dict['meshProperties']['fractureGeometry']['nFractures'] = self._nfracs
         self._sim_dict['wellData'] = self._welldata
         
+        # hardcode
+        if True:
+            self.set_well_friction_all()
+            self.set_perforation_friction_all_ports_all_wells()
+        
         sim_dir = self._sim_dict['simDir']
         if not os.path.exists(sim_dir):
             os.makedirs(sim_dir)
