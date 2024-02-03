@@ -4,12 +4,11 @@ from typing import Optional
 from PySide6.QtCore import Qt
 import pandas as pd
 from PySide6.QtWidgets import (
-    QApplication,
     QWidget,
     QTableWidget,
     QTableWidgetItem
     )
-from PySide6.QtUiTools import QUiLoader
+# from PySide6.QtUiTools import QUiLoader
 
 class TableWidget(QWidget):
     def __init__(self, file_path):
@@ -39,9 +38,9 @@ class ElementOfTable(QTableWidgetItem):
     def __init__(self, element):
         super().__init__(element)
 
-if __name__ == "__main__":
+'''if __name__ == "__main__":
     app = QApplication(sys.argv)
     file_path = "C:/Users/USER/Desktop/TechnoHack24/TECHNOHACK_SIF/src/sched_206.xlsx"
     table_widget = TableWidget(file_path)
     table_widget.show()
-    app.exec()
+    app.exec()'''
