@@ -249,14 +249,14 @@ class SimDict:
         flowrate = [flowrate] if not isinstance(flowrate, list) else flowrate
         schedule = [schedule] if not isinstance(schedule, list) else schedule
         
-        t_start = self._sim_dict['timestepProperties']['startTime']
-        t_end = self._sim_dict['timestepProperties']['endTime']
+        # t_start = self._sim_dict['timestepProperties']['startTime']
+        # t_end = self._sim_dict['timestepProperties']['endTime']
 
-        # Assume zero flowrate before start time
-        # todo: add warning
-        if schedule[0] > t_start:
-            schedule = np.insert(schedule, 0, t_start)
-            flowrate = np.insert(flowrate, 0, 0.0)
+        # # Assume zero flowrate before start time
+        # # todo: add warning
+        # if schedule[0] > t_start:
+        #     schedule = np.insert(schedule, 0, t_start)
+        #     flowrate = np.insert(flowrate, 0, 0.0)
         
         self._welldata['wells'][f'well{well_id}']['flowrate'] = [float(f) for f in flowrate]
         self._welldata['wells'][f'well{well_id}']['schedule'] = [float(s) for s in schedule]

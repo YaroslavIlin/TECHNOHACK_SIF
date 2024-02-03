@@ -3,13 +3,18 @@ from PySide6.QtWidgets import (
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
-    QFileDialog
+    QFileDialog,
+    QComboBox,
+    QLabel
 )
 import pandas as pd
 
+from utils import SimDict
+
+
 class ProxyWindow(QWidget):
 
-    def __init__(self):
+    def __init__(self, simdict: SimDict, num=0):
         super().__init__()
         self.setGeometry(0, 0, 888, 555)
         self.setWindowTitle("Предпросмотр входных данных")
@@ -17,17 +22,28 @@ class ProxyWindow(QWidget):
         self.table_widget =  QTableWidget(self)
         self.table_widget.setGeometry(5, 5, 620, 545)
 
+        self.lbl_well = QLabel(self)
+        self.lbl_well.setText('Номер скважины:')
+        self.lbl_well.setGeometry(640, 10, 240, 28)
+        
+        self.cmb_numwell = QComboBox(self)
+        self.cmb_numwell.setObjectName(u"num_well")
+        self.cmb_numwell.setGeometry(640, 40, 240, 28)
+        for i in range(num):
+            self.cmb_numwell.addItem(f'{i}')
+            
         self.explore = QPushButton(self)
         self.explore.setObjectName(u"explore")
-        self.explore.setGeometry(640, 10, 240, 28)
+        self.explore.setGeometry(640, 80, 240, 28)
         self.explore.setText("Обзор...")
         self.explore.clicked.connect(self.open_schedule)
-
+        
         self.ok = QPushButton(self)
         self.ok.setObjectName(u"ok")
-        self.ok.setGeometry(640, 90, 240, 28)
+        self.ok.setGeometry(640, 120, 240, 28)
         self.ok.setText("OK")
-        self.ok.clicked.connect(self.send_data)
+        # self.ok.clicked.connect(self.send_data)
+        self.ok.clicked.connect(lambda: self.set_well_flowrate(simdict))
 
         # table = Table(self, file_path)
     
@@ -61,6 +77,22 @@ class ProxyWindow(QWidget):
         print(type(self.t))
         print("OK")
         print(self.dict_to_json)
+        
+    def set_well_flowrate(self, simdict: SimDict):
+        w_id = int(self.cmb_numwell.currentText())
+        t = (self.df.iloc[:,0]*(3600*24)).to_list()
+        Q = (self.df.iloc[:,1]/(3600*24)).to_list()
+        # print(w_id, t, Q)
+        simdict.set_well_schedule(
+            well_id  = w_id,
+            flowrate = Q,
+            schedule = t
+        )
+        # @todo: delete this line later
+        simdict.write_data()
+        self.close()
+        
+        
 
 class ElementOfTable(QTableWidgetItem):
 
