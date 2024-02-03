@@ -8,6 +8,8 @@ from math import sqrt
 from scripts.mesh_generation import generate_mesh
 from scripts.plot_domain import plot_wells_fractures_domain
 
+from scripts.canvas import MplCanvas    
+
 
 _repository_dir = os.path.abspath(os.getcwd())
 sys.path.append(_repository_dir)
@@ -431,7 +433,7 @@ class SimDict:
                 self._nfracs += 1
 
     
-    def _plot(self, show_well_labels=True, show_port_labels=False):
+    def _plot(self, canvas: MplCanvas, show_well_labels=True, show_port_labels=False):
         well_labels, well_coords, is_hf = [], [], []
         well_port_labels, well_port_coords, init_frac_coords = [], [], []
         for iw in range(self._nwells):
@@ -464,7 +466,7 @@ class SimDict:
         for ifrac in range(self._sim_dict['meshProperties']['fractureGeometry']['nFractures']):
             frac_coords.append(self._sim_dict['meshProperties']['fractureGeometry']['fractures'][f'fracture{ifrac}']['coordinates'])
         
-        plot_wells_fractures_domain(well_labels, well_coords, is_hf,
+        plot_wells_fractures_domain(canvas, well_labels, well_coords, is_hf,
             well_port_coords, well_port_labels, init_frac_coords,
             frac_coords, domain_coords,
             show_well_labels, show_port_labels)
