@@ -11,13 +11,13 @@ MEDIUM_SIZE = 25
 BIGGER_SIZE = 25
 LEGEND_SIZE = 14
 # rc('text', usetex=True)
-rc('font', size=SMALL_SIZE)          # controls default text sizes
-rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
-rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
-rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-rc('legend', fontsize=LEGEND_SIZE)    # legend fontsize
-rc('figure', titlesize=SMALL_SIZE)  # fontsize of the figure title
+# rc('font', size=SMALL_SIZE)          # controls default text sizes
+# rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+# rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
+# rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+# rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+# rc('legend', fontsize=LEGEND_SIZE)    # legend fontsize
+# rc('figure', titlesize=SMALL_SIZE)  # fontsize of the figure title
 
 # matplotlib.rcParams['text.latex.preamble']= \
 #     r"\usepackage[utf8]{inputenc} \usepackage[russian]{babel} \usepackage{amsmath} \usepackage{amssymb}"
@@ -58,7 +58,7 @@ def plot_wells_fractures_domain(canvas: MplCanvas,
                     str(well_labels[iw]),
                     horizontalalignment='center', verticalalignment='center',
                     fontsize=12,
-                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=1, pad=0.2),
+                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5, pad=0.2),
                     zorder=30)
         
         # port label
@@ -74,7 +74,7 @@ def plot_wells_fractures_domain(canvas: MplCanvas,
     # canvas.axes.set_aspect('equal')
     canvas.axes.set_xlim(xlimits)
     canvas.axes.set_ylim(ylimits)
-    canvas.axes.grid()
+    canvas.axes.grid(visible=True)
     canvas.fig.tight_layout()
     # plt.show()
 

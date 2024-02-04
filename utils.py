@@ -52,6 +52,8 @@ def _fracture_from_wings(point: list, wings: list):
 def _fix_ports_coordinates(well_coord, port_coords, iw):
     xmin, ymin, xmax, ymax = well_coord
     A = xmax - xmin;  B = ymax - ymin # guide vector
+    if A**2 + B**2 < 1.0e-6:
+        return [[xmin, ymin]], 'vert'
     ans, error_message = [], ''
     for i in range(len(port_coords)):
         # read given coordinate
@@ -271,21 +273,27 @@ class SimDict:
     def add_port_to_well(self, well_id, port_point, names=None, force_push=True):
         well_coord = self._welldata['wells'][f'well{well_id}']['coordinates']
         n_ports = 1
-        ip = self._welldata['wells'][f'well{well_id}']['nPorts'] - 1
         
         names = [] if names == None else names
         names = [names] if not isinstance(names, list) else names
         
         ppoints = [[float(port_point[0]), float(port_point[1])]]
-            
-        self._fracs_on_wells[f'well{well_id}']['nfracs'] += n_ports
-        self._fracs_on_wells[f'well{well_id}']['is_fractured'][f'port{ip}'] = False
         
         if force_push:
             # todo: add warning if port positions were corrected
             ppoints, err_msg = _fix_ports_coordinates(well_coord, ppoints, well_id)
         
-        self._welldata['wells'][f'well{well_id}']['nPorts'] += n_ports
+        if err_msg == 'vert':
+            self._welldata['wells'][f'well{well_id}']['nPorts'] = n_ports
+            self._fracs_on_wells[f'well{well_id}']['nfracs'] = n_ports
+            self._welldata['wells'][f'well{well_id}']['ports'] = {}
+        else:
+            self._welldata['wells'][f'well{well_id}']['nPorts'] += n_ports
+            self._fracs_on_wells[f'well{well_id}']['nfracs'] += n_ports
+            
+        ip = self._welldata['wells'][f'well{well_id}']['nPorts'] - 1
+        self._fracs_on_wells[f'well{well_id}']['is_fractured'][f'port{ip}'] = False
+        
         # print(f"in dict {self._welldata['wells'][f'well{well_id}']['nPorts']}")
         # ports = dict()
         if not names:

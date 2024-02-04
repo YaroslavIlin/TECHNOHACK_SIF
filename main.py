@@ -1,4 +1,5 @@
 import sys
+import os
 from typing import Optional
 from PySide6.QtCore import QFile, QSize, Qt
 from PySide6.QtGui import QAction, QPalette, QColor
@@ -24,6 +25,7 @@ from proxy_window import ProxyWindow
 
 
 from scripts.canvas import MplCanvas         
+from scripts.mesh_generation import generate_mesh
 
 class Parameters():
     data_E      = 0.0
@@ -107,7 +109,7 @@ class MainWindow(QMainWindow):
 
 
 #Вкладка конфигурации
-        self.canvas_config = MplCanvas(self, width=5, height=4, dpi=100)
+        self.canvas_config = MplCanvas(self, width=4, height=4, dpi=100)
         self.ui.graph_config.addWidget(self.canvas_config)
         self.ui.le_X_min.setText('-200')
         self.ui.le_X_max.setText('200')
@@ -144,6 +146,8 @@ class MainWindow(QMainWindow):
         self.ui.cmb_graphtype.activated.connect(self.changed_cmb_graphtype)
         self.ui.cmb_graphtype.activated.connect(self.restart_cmb_result)
         self.ui.cmb_numwell.activated.connect(self.restart_cmb_port_result)
+        self.graph_result_1 = MplCanvas(self, width=4, height=4, dpi=100)
+        self.ui.graph_result_1.addWidget(self.graph_result_1)
         #self.ui.graph_result_1.addWidget(self.canvas)
         #self.ui.btn_graph_calc.clicked.connect(lambda: self.testplot(self.canvas, 'test'))
 
@@ -162,7 +166,9 @@ class MainWindow(QMainWindow):
         self.ui.le_SIHF_min.textChanged.connect(self.get_mesh_properties)
         self.ui.le_SIHF_max.textChanged.connect(self.get_mesh_properties)
         self.ui.le_well_min.textChanged.connect(self.get_mesh_properties)
-        self.ui.le_well_max.textChanged.connect(self.get_mesh_properties)   
+        self.ui.le_well_max.textChanged.connect(self.get_mesh_properties)
+        
+        self.ui.m.clicked.connect(self.genmesh)
         
         # Заполнить hardcode поля
         if True:
@@ -239,25 +245,39 @@ class MainWindow(QMainWindow):
         self.canvas_config.draw()
 
     
+    def genmesh(self):
+        sim_dir = self.simdict._sim_dict['simDir']
+        if not os.path.exists(sim_dir):
+            os.makedirs(sim_dir)
+        input_file = sim_dir + '/input.json'
+        generate_mesh(input_file, True)
+    
+    
     def open_addwell(self):
         self.w = AddWell(self.simdict, self.simdict._nwells)
         self.w.exec()
         self.restart_cmb_config()
-        self.update_domain_borders()
+        # self.update_domain_borders()
+        self.simdict._plot(self.canvas_config)
+        self.canvas_config.draw()
         
         
     def open_addport(self):
         self.w = AddPort(self.simdict, self.simdict._nwells)
         self.w.exec()
         self.restart_cmb_config()
-        self.update_domain_borders()
+        # self.update_domain_borders()
+        self.simdict._plot(self.canvas_config)
+        self.canvas_config.draw()
 
 
     def open_addfracture(self):
         self.w = AddFracture(self.simdict, self.simdict._nwells)
         self.w.exec()
         self.restart_cmb_config()
-        self.update_domain_borders()
+        # self.update_domain_borders()
+        self.simdict._plot(self.canvas_config)
+        self.canvas_config.draw()
         
         
     def proxy_window(self):
