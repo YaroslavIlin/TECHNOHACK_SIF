@@ -27,6 +27,7 @@ from proxy_window import ProxyWindow
 from scripts.canvas import MplCanvas         
 from scripts.mesh_generation import generate_mesh
 from scripts.fracture_data import FractureData
+from scripts.plot_result import plot_result_frac_1
 
 class Parameters():
     data_E      = 0.0
@@ -135,10 +136,10 @@ class MainWindow(QMainWindow):
         self.ui.le_t_end.textChanged.connect(lambda: self.get_timestep_prop(self.simdict))
         
 #Вкладка расчёта
-        self.ui.sldr_graph.valueChanged.connect(self.test_slider)
+        # self.ui.sldr_graph.valueChanged.connect(self.test_slider)
+        self.ui.sldr_graph.valueChanged.connect(self.move_slider)
+        self.ui.lbl_t.setText(f'T: = {self.ui.sldr_graph.value()}')
 
-        self.fracdata = FractureData(self.simdict._sim_dict['simDir'])
-        
         self.ui.cmb_graphtype.addItem('p^p(t)')
         self.ui.cmb_graphtype.addItem('p^w(t)')
         self.ui.cmb_graphtype.addItem('Qf(t)')
@@ -151,21 +152,31 @@ class MainWindow(QMainWindow):
         self.ui.cmb_graphtype.activated.connect(self.changed_cmb_graphtype)
         self.ui.cmb_graphtype.activated.connect(self.restart_cmb_result)
         self.ui.cmb_numwell.activated.connect(self.restart_cmb_port_result)
-        self.graph_result_1 = MplCanvas(self, width=4, height=4, dpi=100)
-        self.ui.graph_result_1.addWidget(self.graph_result_1)
+        self.canvas_result_1 = MplCanvas(self, width=4, height=4, dpi=100)
+        self.ui.graph_result_1.addWidget(self.canvas_result_1)
         #self.ui.graph_result_1.addWidget(self.canvas)
         #self.ui.btn_graph_calc.clicked.connect(lambda: self.testplot(self.canvas, 'test'))
 
-        self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.setGeometry(30, 40, 200, 30)
-        self.slider.valueChanged[int].connect(self.changeValue)
-
         self.setGeometry(50,50,320,200)
-        self.setWindowTitle("Checkbox Example")
+        self.setWindowTitle("АГРП")
         self.show()
-
-    def changeValue(self, value):
-        print(value)
+        
+        # Вкладка "Сетка"
+        self.ui.le_cell_size.setText('200')
+        self.ui.le_SIHF.setText('2')
+        self.ui.le_fracture.setText('5')
+        self.ui.le_SIHF_min.setText('20')
+        self.ui.le_SIHF_max.setText('200')
+        self.ui.le_well_min.setText('20')
+        self.ui.le_well_max.setText('200')
+        
+        self.ui.le_cell_size.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_SIHF.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_fracture.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_SIHF_min.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_SIHF_max.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_well_min.textChanged.connect(self.get_mesh_properties)
+        self.ui.le_well_max.textChanged.connect(self.get_mesh_properties)   
 
         # Вкладка "Сетка"
         self.ui.le_cell_size.setText('100')
@@ -195,7 +206,7 @@ class MainWindow(QMainWindow):
             self.get_mesh_properties()
             self.update_domain_borders()
             
-                    
+    
     def get_parameters(self):
         #Преобразует текст из line edit в переменные класса параметров
         #Также автоматически преобразует в СИ
@@ -273,27 +284,30 @@ class MainWindow(QMainWindow):
         self.w = AddWell(self.simdict, self.simdict._nwells)
         self.w.exec()
         self.restart_cmb_config()
-        # self.update_domain_borders()
-        self.simdict._plot(self.canvas_config)
-        self.canvas_config.draw()
+        # self.canvas_config.axes.cla()
+        self.update_domain_borders()
+        # self.simdict._plot(self.canvas_config)
+        # self.canvas_config.draw()
         
         
     def open_addport(self):
         self.w = AddPort(self.simdict, self.simdict._nwells)
         self.w.exec()
         self.restart_cmb_config()
-        # self.update_domain_borders()
-        self.simdict._plot(self.canvas_config)
-        self.canvas_config.draw()
+        # self.canvas_config.axes.cla()
+        self.update_domain_borders()
+        # self.simdict._plot(self.canvas_config)
+        # self.canvas_config.draw()
 
 
     def open_addfracture(self):
         self.w = AddFracture(self.simdict, self.simdict._nwells)
         self.w.exec()
         self.restart_cmb_config()
-        # self.update_domain_borders()
-        self.simdict._plot(self.canvas_config)
-        self.canvas_config.draw()
+        # self.canvas_config.axes.cla()
+        self.update_domain_borders()
+        # self.simdict._plot(self.canvas_config)
+        # self.canvas_config.draw()
         
         
     def proxy_window(self):
@@ -378,10 +392,13 @@ class MainWindow(QMainWindow):
 
     def get_num_sim(self, simdict: SimDict):
         simnum = int(self.ui.le_simulnub.text())
-        self.simdict.set_simID(simnum)
-        self.simdict.write_data()
+        simdict.set_simID(simnum)
+        simdict.write_data()
         self.fracdata = FractureData(self.simdict._sim_dict['simDir'])
         self.fracdata.preload_data()
+        print('preload done')
+        self.ui.sldr_graph.setMaximum(self.fracdata.ntimesteps - 1)
+        
     
     def get_comment_sim(self, simdict: SimDict):
         simcomment = self.ui.le_comment.text()
@@ -427,8 +444,24 @@ class MainWindow(QMainWindow):
                 self.ui.cmb_numport.setEnabled(True)
     
     def test_slider(self):
-        self.ui.lbl_t.setText(f'T: = {self.ui.sldr_graph.value()}')
-        print(self.ui.sldr_graph.value())
+        self.ui.lbl_t.setText(f'Шаг №{self.ui.sldr_graph.value()}')
+        # print(self.ui.sldr_graph.value())
+        
+    def move_slider(self):
+        timestep = self.ui.sldr_graph.value()
+        self.ui.lbl_t.setText(f'Шаг №{timestep}')
+        # print(f'idx={self.ui.cmb_graphtype.currentIndex()}')
+        gt = self.ui.cmb_graphtype.itemText(self.ui.cmb_graphtype.currentIndex())
+        # print(f'gt={gt}')
+        self.canvas_result_1.axes.cla()
+        if gt == 'w(x)' or gt == 'p(x)':
+            # print('here')
+            ifrac = int(self.ui.cmb_numwell.itemText(self.ui.cmb_numwell.currentIndex()))
+            plot_result_frac_1(self.canvas_result_1, self.fracdata, timestep, ifrac, gt)
+        else:
+            pass            
+        self.canvas_result_1.draw()
+        
         
     
     def testplot(self, cnv: MplCanvas, s: str):

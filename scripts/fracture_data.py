@@ -28,6 +28,9 @@ class FractureData:
         self.input = json.load(open(self.input_path))
         self.indxs_frac = []
         
+        self.wmin, self.wmax = 0.0, 0.0
+        self.pmin, self.pmax = 0.0, 0.0
+        
         self.IS_FIRST = True
         self.PRELOAD = False
         
@@ -59,16 +62,25 @@ class FractureData:
                 self.indxs_frac.append(indxs)
             self.IS_FIRST = False
         
+        wmin, wmax = 0.0, 0.0
+        pmin, pmax = 0.0, 0.0
         for i in range(self.nf):
             frac = {}
             indxs = self.indxs_frac[i]
             frac["x"] = x[indxs]
             frac["y"] = y[indxs]
             frac["width"] = w[indxs]
+            wmin = min(wmin, np.min(w[indxs]))
+            wmax = min(wmax, np.max(w[indxs]))
             frac["pressure"] = p[indxs]
+            pmin = min(pmin, np.min(p[indxs]))
+            pmax = min(pmax, np.max(p[indxs]))
             frac["uv"] = uv[indxs]
             result[f"fracture{i}"] = frac
-            
+        self.wmin = min(self.wmin, wmin)
+        self.wmax = max(self.wmax, wmax)
+        self.pmin = min(self.pmin, pmin)
+        self.pmax = max(self.pmax, pmax)
         return result
     
     def preload_data(self):
