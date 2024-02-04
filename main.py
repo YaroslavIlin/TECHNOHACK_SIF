@@ -134,6 +134,8 @@ class MainWindow(QMainWindow):
         self.ui.le_t_end.textChanged.connect(lambda: self.get_timestep_prop(self.simdict))
         
 #Вкладка расчёта
+        self.ui.sldr_graph.valueChanged.connect(self.test_slider)
+
         self.ui.cmb_graphtype.addItem('p^p(t)')
         self.ui.cmb_graphtype.addItem('p^w(t)')
         self.ui.cmb_graphtype.addItem('Qf(t)')
@@ -408,6 +410,10 @@ class MainWindow(QMainWindow):
                 self.ui.cmb_numport.addItem(f"{i}")
                 self.ui.cmb_numport.setEnabled(True)
     
+    def test_slider(self):
+        self.ui.lbl_t.setText(f'T: = {self.ui.sldr_graph.value()}')
+        print(self.ui.sldr_graph.value())
+        
     
     def testplot(self, cnv: MplCanvas, s: str):
         x = np.random.rand(10)
