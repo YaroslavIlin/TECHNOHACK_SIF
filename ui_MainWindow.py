@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout,
     QLabel, QLineEdit, QMainWindow, QMenuBar,
-    QPushButton, QSizePolicy, QStatusBar, QTabWidget,
-    QVBoxLayout, QWidget)
+    QPushButton, QSizePolicy, QSlider, QStatusBar,
+    QTabWidget, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -519,7 +519,7 @@ class Ui_MainWindow(object):
         self.btn_graph_calc.setFont(font1)
         self.verticalLayoutWidget_3 = QWidget(self.tab_4)
         self.verticalLayoutWidget_3.setObjectName(u"verticalLayoutWidget_3")
-        self.verticalLayoutWidget_3.setGeometry(QRect(150, 10, 321, 271))
+        self.verticalLayoutWidget_3.setGeometry(QRect(140, 60, 611, 461))
         self.graph_result_1 = QVBoxLayout(self.verticalLayoutWidget_3)
         self.graph_result_1.setObjectName(u"graph_result_1")
         self.graph_result_1.setContentsMargins(0, 0, 0, 0)
@@ -541,6 +541,16 @@ class Ui_MainWindow(object):
         self.lbl_numportresult = QLabel(self.tab_4)
         self.lbl_numportresult.setObjectName(u"lbl_numportresult")
         self.lbl_numportresult.setGeometry(QRect(20, 190, 80, 20))
+        self.sldr_graph = QSlider(self.tab_4)
+        self.sldr_graph.setObjectName(u"sldr_graph")
+        self.sldr_graph.setGeometry(QRect(150, 20, 441, 18))
+        self.sldr_graph.setOrientation(Qt.Horizontal)
+        self.sldr_graph.setMinimum(0)
+        self.sldr_graph.setMaximum(100)
+        self.sldr_graph.setTickInterval(1)
+        self.lbl_t = QLabel(self.tab_4)
+        self.lbl_t.setObjectName(u"lbl_t")
+        self.lbl_t.setGeometry(QRect(608, 18, 63, 20))
         self.tabWidget.addTab(self.tab_4, "")
 
         self.horizontalLayout.addWidget(self.tabWidget)
@@ -678,6 +688,7 @@ class Ui_MainWindow(object):
         self.label_11.setText(QCoreApplication.translate("MainWindow", u"\u0422\u0438\u043f", None))
         self.lbl_numwellorfrac.setText(QCoreApplication.translate("MainWindow", u"\u2116 \u0441\u043a\u0432.", None))
         self.lbl_numportresult.setText(QCoreApplication.translate("MainWindow", u"\u2116 \u043f\u043e\u0440\u0442\u0430", None))
+        self.lbl_t.setText(QCoreApplication.translate("MainWindow", u"T: =", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QCoreApplication.translate("MainWindow", u"\u0420\u0430\u0441\u0447\u0451\u0442", None))
     # retranslateUi
 
