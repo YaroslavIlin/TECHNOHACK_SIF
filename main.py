@@ -26,6 +26,7 @@ from proxy_window import ProxyWindow
 
 from scripts.canvas import MplCanvas         
 from scripts.mesh_generation import generate_mesh
+from scripts.fracture_data import FractureData
 
 class Parameters():
     data_E      = 0.0
@@ -136,6 +137,8 @@ class MainWindow(QMainWindow):
 #Вкладка расчёта
         self.ui.sldr_graph.valueChanged.connect(self.test_slider)
 
+        self.fracdata = FractureData(self.simdict._sim_dict['simDir'])
+        
         self.ui.cmb_graphtype.addItem('p^p(t)')
         self.ui.cmb_graphtype.addItem('p^w(t)')
         self.ui.cmb_graphtype.addItem('Qf(t)')
@@ -153,8 +156,19 @@ class MainWindow(QMainWindow):
         #self.ui.graph_result_1.addWidget(self.canvas)
         #self.ui.btn_graph_calc.clicked.connect(lambda: self.testplot(self.canvas, 'test'))
 
+        self.slider = QSlider(Qt.Horizontal, self)
+        self.slider.setGeometry(30, 40, 200, 30)
+        self.slider.valueChanged[int].connect(self.changeValue)
+
+        self.setGeometry(50,50,320,200)
+        self.setWindowTitle("Checkbox Example")
+        self.show()
+
+    def changeValue(self, value):
+        print(value)
+
         # Вкладка "Сетка"
-        self.ui.le_cell_size.setText('200')
+        self.ui.le_cell_size.setText('100')
         self.ui.le_SIHF.setText('2')
         self.ui.le_fracture.setText('5')
         self.ui.le_SIHF_min.setText('20')
@@ -366,6 +380,8 @@ class MainWindow(QMainWindow):
         simnum = int(self.ui.le_simulnub.text())
         self.simdict.set_simID(simnum)
         self.simdict.write_data()
+        self.fracdata = FractureData(self.simdict._sim_dict['simDir'])
+        self.fracdata.preload_data()
     
     def get_comment_sim(self, simdict: SimDict):
         simcomment = self.ui.le_comment.text()
